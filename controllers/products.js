@@ -117,7 +117,6 @@ export const getProductsByPriceRange = async (req, res) => {
     res.status(500).json({ message: "Internal server error" })
   }
 }
-
 export const getProductsByFilters = async (req, res) => {
   try {
     const { category } = req.params
@@ -130,19 +129,24 @@ export const getProductsByFilters = async (req, res) => {
 
     const brandArray = brands ? brands.split(",") : []
 
-    const filteredProducts = productCollection.products
-      .filter(
-        (product) =>
-          brandArray.length === 0 ||
-          brandArray.some((brand) =>
-            product.brand.toLowerCase().includes(brand.toLowerCase())
-          )
-      )
-      .filter(
-        (product) =>
-          (!price_min || product.price >= Number(price_min)) &&
-          (!price_max || product.price <= Number(price_max))
-      )
+    const priceMinValues = price_min ? price_min.split(",").map(Number) : []
+    const priceMaxValues = price_max ? price_max.split(",").map(Number) : []
+
+    const filteredProducts = productCollection.products.filter((product) => {
+      const isBrandMatch =
+        brandArray.length === 0 ||
+        brandArray.some((brand) =>
+          product.brand.toLowerCase().includes(brand.toLowerCase())
+        )
+
+      const isPriceMatch =
+        (!priceMinValues.length ||
+          priceMinValues.some((value) => product.price >= value)) &&
+        (!priceMaxValues.length ||
+          priceMaxValues.some((value) => product.price <= value))
+
+      return isBrandMatch && isPriceMatch
+    })
 
     // Pagination logic
     const totalPages = Math.ceil(filteredProducts.length / limit)
