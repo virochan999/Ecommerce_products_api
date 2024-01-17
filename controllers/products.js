@@ -121,17 +121,22 @@ export const getProductsByPriceRange = async (req, res) => {
 export const getProductsByFilters = async (req, res) => {
   try {
     const { category } = req.params
-    const { brand, price_min, price_max } = req.query
+    const { brands, price_min, price_max, offset = 0, limit = 10 } = req.query
 
     const productCollection = await ProductCollectionModel.findOne({ category })
     if (!productCollection) {
       return res.status(404).json({ message: "Category not found" })
     }
 
+    const brandArray = brands ? brands.split(",") : []
+
     const filteredProducts = productCollection.products
       .filter(
         (product) =>
-          !brand || product.brand.toLowerCase().includes(brand.toLowerCase())
+          brandArray.length === 0 ||
+          brandArray.some((brand) =>
+            product.brand.toLowerCase().includes(brand.toLowerCase())
+          )
       )
       .filter(
         (product) =>
@@ -139,7 +144,18 @@ export const getProductsByFilters = async (req, res) => {
           (!price_max || product.price <= Number(price_max))
       )
 
-    res.json(filteredProducts)
+    // Pagination logic
+    const totalPages = Math.ceil(filteredProducts.length / limit)
+    const paginatedProducts = filteredProducts.slice(offset, offset + limit)
+
+    res.json({
+      products: paginatedProducts,
+      pagination: {
+        totalProducts: filteredProducts.length,
+        totalPages,
+        currentPage: Math.ceil(offset / limit) + 1,
+      },
+    })
   } catch (error) {
     console.error("Error applying join filters for category:", error)
     res.status(500).json({ message: "Internal server error" })
