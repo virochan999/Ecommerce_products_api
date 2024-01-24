@@ -117,10 +117,18 @@ export const getProductsByPriceRange = async (req, res) => {
     res.status(500).json({ message: "Internal server error" })
   }
 }
+
 export const getProductsByFilters = async (req, res) => {
   try {
     const { category } = req.params
-    const { brands, price_min, price_max, offset = 0, limit = 10 } = req.query
+    const {
+      brands,
+      price_min,
+      price_max,
+      offset = 0,
+      limit = 10,
+      sort,
+    } = req.query
 
     const productCollection = await ProductCollectionModel.findOne({ category })
     if (!productCollection) {
@@ -132,7 +140,7 @@ export const getProductsByFilters = async (req, res) => {
     const priceMinValues = price_min ? price_min.split(",").map(Number) : []
     const priceMaxValues = price_max ? price_max.split(",").map(Number) : []
 
-    const filteredProducts = productCollection.products.filter((product) => {
+    let filteredProducts = productCollection.products.filter((product) => {
       const isBrandMatch =
         brandArray.length === 0 ||
         brandArray.some((brand) =>
@@ -147,6 +155,15 @@ export const getProductsByFilters = async (req, res) => {
 
       return isBrandMatch && isPriceMatch
     })
+
+    // Sort logic
+    if (sort) {
+      if (sort === "asc") {
+        filteredProducts = filteredProducts.sort((a, b) => a.price - b.price)
+      } else if (sort === "desc") {
+        filteredProducts = filteredProducts.sort((a, b) => b.price - a.price)
+      }
+    }
 
     // Pagination logic
     const totalPages = Math.ceil(filteredProducts.length / limit)
