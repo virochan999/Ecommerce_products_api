@@ -1,4 +1,5 @@
 import express from "express"
+import cors from "cors"
 import connectDB from "./Database/db.js"
 import productRouter from "./routes/product.js"
 import categoryRouter from "./routes/category.js"
@@ -10,6 +11,15 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(express.static("public"))
+
+app.use(
+  cors({
+    origin: "https://voluble-squirrel-7a9573.netlify.app",
+    methods: "GET, POST, PUT, PATCH, DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204,
+  })
+)
 
 app.use("/home", homeRouter)
 app.use("/products", productRouter)
