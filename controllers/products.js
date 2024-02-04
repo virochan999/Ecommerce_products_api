@@ -93,6 +93,37 @@ export const getProductsByTitle = async (req, res) => {
   }
 }
 
+export const searchProducts = async (req, res) => {
+  try {
+    const { title } = req.query
+
+    const filteredProducts = await ProductCollectionModel.aggregate([
+      {
+        $unwind: "$products",
+      },
+      {
+        $match: {
+          "products.title": { $regex: title, $options: "i" },
+        },
+      },
+      {
+        $project: {
+          _id: "$products._id",
+          title: "$products.title",
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ])
+
+    res.json(filteredProducts)
+  } catch (error) {
+    console.error("Error searching products by title:", error)
+    res.status(500).json({ message: "Internal server error" })
+  }
+}
+
 export const getProductsByPriceRange = async (req, res) => {
   try {
     const { category } = req.params
