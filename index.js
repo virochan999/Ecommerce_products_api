@@ -14,7 +14,7 @@ app.use(express.static("public"))
 
 app.use(
   cors({
-    origin: "https://ecommerce-vs.netlify.app/",
+    origin: "https://ecommerce-vs.netlify.app",
     methods: "GET, POST, PUT, PATCH, DELETE",
     credentials: true,
     optionsSuccessStatus: 204,
