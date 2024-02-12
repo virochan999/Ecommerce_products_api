@@ -14,7 +14,7 @@ app.use(express.static("public"))
 
 app.use(
   cors({
-    origin: "https://voluble-squirrel-7a9573.netlify.app",
+    origin: "https://ecommerce-vs.netlify.app/",
     methods: "GET, POST, PUT, PATCH, DELETE",
     credentials: true,
     optionsSuccessStatus: 204,
